@@ -1,0 +1,9 @@
+*.swp
+*~
+*.o
+*.d
+*.orig
+tags
+TAGS
+cscope.out
+build
