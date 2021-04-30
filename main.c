@@ -1,43 +1,40 @@
-/*
-  from qemu's info mtree for machine mcf5208evb
-  0000000000000000-ffffffffffffffff (prio 0, i/o): system
-    0000000000000000-00000000001fffff (prio 0, rom): mcf5208.rom
-    0000000040000000-0000000047ffffff (prio 0, ram): mcf5208.ram
-    0000000080000000-0000000080003fff (prio 0, ram): mcf5208.sram
-    00000000fc030000-00000000fc0303ff (prio 0, i/o): fec
-    00000000fc048000-00000000fc0480ff (prio 0, i/o): mcf
-    00000000fc060000-00000000fc06003f (prio 0, i/o): uart
-    00000000fc064000-00000000fc06403f (prio 0, i/o): uart
-    00000000fc068000-00000000fc06803f (prio 0, i/o): uart
-    00000000fc080000-00000000fc083fff (prio 0, i/o): m5208-timer
-    00000000fc084000-00000000fc087fff (prio 0, i/o): m5208-timer
-    00000000fc0a8000-00000000fc0abfff (prio 0, i/o): m5208-sys
-*/
+// simple test code for qemu 6.0's virt machine for 68k
 
-static volatile unsigned int *uart_base = (void *)0xfc060000;
+// goldfish tty
+// from qemu/hw/char/goldfish_tty.c
+volatile unsigned int *goldfish_tty_base = 0xff008000;
 
-enum uart_regs {
-    UART_MR = 0,
-    UART_CSR,
-    UART_CMD,
-    UART_BUF,
-    UART_ACR,
-    UART_IMR
+// registers
+enum {
+    REG_PUT_CHAR      = 0x00,
+    REG_BYTES_READY   = 0x04,
+    REG_CMD           = 0x08,
+    REG_DATA_PTR      = 0x10,
+    REG_DATA_LEN      = 0x14,
+    REG_DATA_PTR_HIGH = 0x18,
+    REG_VERSION       = 0x20,
+};
+
+// commands
+
+enum {
+    CMD_INT_DISABLE   = 0x00,
+    CMD_INT_ENABLE    = 0x01,
+    CMD_WRITE_BUFFER  = 0x02,
+    CMD_READ_BUFFER   = 0x03,
 };
 
 static void uart_putc(char c) {
-    uart_base[UART_BUF] =  c;
+    goldfish_tty_base[REG_PUT_CHAR] = c;
 }
+
+static void uart_init(void) { }
 
 static void uart_puts(const char *s) {
     while (*s) {
         uart_putc(*s);
         s++;
     }
-}
-
-static void uart_init(void) {
-    uart_base[UART_CMD] = (1 << 2); // enable transmitter
 }
 
 void _main() {
