@@ -1,3 +1,4 @@
+.section .text.startup
 .globl _start
 _start:
     movel   #_stack_top,%sp
@@ -5,7 +6,7 @@ _start:
     jmp     .
 
 .data
-.align 2
+.align 8
 _stack_base:
     .skip 4096
 _stack_top:
