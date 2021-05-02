@@ -4,7 +4,7 @@
 
 // goldfish tty
 // from qemu/hw/char/goldfish_tty.c
-volatile unsigned int * const goldfish_tty_base = 0xff008000;
+volatile unsigned int * const goldfish_tty_base = (void *)VIRT_GF_TTY_MMIO_BASE;
 
 // registers
 enum {
@@ -30,27 +30,37 @@ void uart_putc(char c) {
     goldfish_tty_base[REG_PUT_CHAR/4] = c;
 }
 
+void uart_early_init(void) { }
 void uart_init(void) { }
 
 void uart_puts(const char *s) {
-#if 1
-    // one character at a time
-    while (*s) {
-        uart_putc(*s);
-        s++;
+    if (1) {
+        // one character at a time version
+        while (*s) {
+            uart_putc(*s);
+            s++;
+        }
+    } else {
+        // use the CMD_WRITE_BUFFER routine
+        goldfish_tty_base[REG_DATA_PTR/4] = (unsigned int)s;
+        goldfish_tty_base[REG_DATA_PTR_HIGH/4] = 0;
+        unsigned int len = 0;
+        while (*s) {
+            s++;
+            len++;
+        }
+        goldfish_tty_base[REG_DATA_LEN/4] = len;
+        goldfish_tty_base[REG_CMD/4] = CMD_WRITE_BUFFER;
     }
-#else
-    // use the CMD_WRITE_BUFFER routine
-    goldfish_tty_base[REG_DATA_PTR/4] = (unsigned int)s;
-    goldfish_tty_base[REG_DATA_PTR_HIGH/4] = 0;
-    unsigned int len = 0;
-    while (*s) {
-        s++;
-        len++;
-    }
-    goldfish_tty_base[REG_DATA_LEN/4] = len;
-    goldfish_tty_base[REG_CMD/4] = CMD_WRITE_BUFFER;
-#endif
 }
 
+void uart_put_hex(unsigned int x) {
+    const char * const hex = "0123456789abcdef";
+    uart_putc('0');
+    uart_putc('x');
+
+    for (int i = 7; i >= 0; i--) {
+        uart_putc(hex[(x >> (4 * i)) & 0xf]);
+    }
+}
 

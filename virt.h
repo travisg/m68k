@@ -25,8 +25,7 @@
 
 #define PIC_IRQ_BASE(num)     (8 + (num - 1) * 32)
 #define PIC_IRQ(num, irq)     (PIC_IRQ_BASE(num) + irq - 1)
-//#define PIC_GPIO(pic_irq)     (qdev_get_gpio_in(pic_dev[(pic_irq - 8) / 32], \
-//                                                (pic_irq - 8) % 32))
+//#define PIC_GPIO(pic_irq)     (qdev_get_gpio_in(pic_dev[(pic_irq - 8) / 32], (pic_irq - 8) % 32))
 
 #define VIRT_GF_PIC_MMIO_BASE 0xff000000     /* MMIO: 0xff000000 - 0xff005fff */
 #define VIRT_GF_PIC_IRQ_BASE  1              /* IRQ: #1 -> #6 */
